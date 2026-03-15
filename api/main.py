@@ -40,6 +40,7 @@ import torch
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Security, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from db.cases_db import save_case, get_cases, get_case, get_stats, init_db
 from fastapi.security.api_key import APIKeyHeader
 from pydantic import BaseModel, Field
 
@@ -79,6 +80,9 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.warning(f"[API] Search index load failed: {e}")
 
+    # Initialize cases database
+    init_db()
+    logger.info("[API] Cases database ready ✓")
     logger.info("[API] Pipeline ready ✓")
     yield
     logger.info("[API] Shutdown")
@@ -315,6 +319,13 @@ async def analyze(
         content, image_id=iid,
         explain=explain, segment=segment,
     )
+    # Save to database (Data Flywheel)
+    try:
+        patient_id_val = patient_info.get("id", "Unknown") if patient_info else (image_id or "Unknown")
+        save_case(result.to_api_dict(), patient_id=patient_id_val, image_name=file.filename or "")
+    except Exception as e:
+        logger.warning(f"[API] Could not save case to DB: {e}")
+
     return _build_response(result)
 
 
@@ -566,3 +577,49 @@ async def analyze_progression(
         recommendation=prog.recommendation,
         full_report=prog.full_report,
     )
+
+
+@app.get("/cases", tags=["Cases"])
+async def list_cases(
+    limit:      int  = 50,
+    offset:     int  = 0,
+    patient_id: Optional[str] = None,
+    dr_grade:   Optional[int] = None,
+    refer_only: bool = False,
+    _ = Depends(verify_api_key),
+):
+    """List all analyzed cases — for the dashboard."""
+    cases = get_cases(limit=limit, offset=offset,
+                      patient_id=patient_id, dr_grade=dr_grade,
+                      refer_only=refer_only)
+    return {"total": len(cases), "cases": cases}
+
+
+@app.get("/cases/stats", tags=["Cases"])
+async def cases_stats(_ = Depends(verify_api_key)):
+    """Dashboard statistics: totals, this week, grade distribution."""
+    return get_stats()
+
+
+@app.get("/cases/{case_id}", tags=["Cases"])
+async def get_case_detail(
+    case_id: str,
+    _ = Depends(verify_api_key),
+):
+    """Get full details of a single case."""
+    case = get_case(case_id)
+    if not case:
+        raise HTTPException(404, f"Case '{case_id}' not found")
+    return case
+
+
+@app.delete("/cases/{case_id}", tags=["Cases"])
+async def remove_case(
+    case_id: str,
+    _ = Depends(verify_api_key),
+):
+    """Delete a case from the database."""
+    from db.cases_db import delete_case
+    if not delete_case(case_id):
+        raise HTTPException(404, f"Case '{case_id}' not found")
+    return {"deleted": case_id}
