@@ -1,3 +1,18 @@
+
+============================================================
+ NOTE — CASES DATABASE
+============================================================
+
+Every analysis is automatically saved to:
+    database/retina_cases.db    ← SQLite, created automatically
+
+Access via API:
+    GET /cases              ← All cases (for dashboard)
+    GET /cases/stats        ← Statistics
+    GET /cases/{id}         ← Single case
+
+No setup needed — file is created on first /analyze call.
+
 # Retina-GPT — Complete Setup & Run Guide
 # RTX 4050 · APTOS 2019 · Windows/Linux
 

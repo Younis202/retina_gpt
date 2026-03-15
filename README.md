@@ -70,8 +70,11 @@ retina_gpt/
 ├── data_engine/
 │   └── data_engine.py             ← Quality control + versioning
 │
+├── db/
+│   └── cases_db.py               ← SQLite database (auto-saves every analysis)
+│
 ├── api/
-│   └── main.py                    ← FastAPI (10 endpoints)
+│   └── main.py                    ← FastAPI (14 endpoints)
 │
 ├── scripts/
 │   ├── train.py                   ← START HERE to train

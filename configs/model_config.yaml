@@ -56,7 +56,7 @@ model:
     freeze_lm_backbone: true
 
 preprocessing:
-  target_size: [512, 512]
+  target_size: [224, 224]
   clahe_clip_limit: 2.0
   clahe_tile_grid_size: [8, 8]
   use_green_channel: true
