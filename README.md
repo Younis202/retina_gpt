@@ -1,133 +1,150 @@
-# 🔬 Retina-GPT: Foundation Model for Retinal Image Analysis
+# Retina-GPT — Retina Foundation Model
 
-<div align="center">
+Production-grade AI platform for retinal fundus image analysis.
 
-```
-Retina Image → Preprocessing → Vision Encoder → Universal Embedding
-       → Multi-Task Heads → Medical Language Model → Clinical Report
-```
+## What it does
 
-**Production-Grade AI Pipeline for Clinical Retinal Analysis**
-
-</div>
+Upload a retinal image → get back:
+- DR grading (0-4) with confidence
+- AMD staging
+- Glaucoma detection
+- Lesion detection (microaneurysms, hemorrhages, exudates)
+- Grad-CAM explanation (which region caused the diagnosis)
+- PDF clinical report
+- Similar cases from database
 
 ---
 
-## 🏗️ Architecture Overview
-
-Retina-GPT is a multimodal foundation model that combines:
-- **Retina Vision Transformer (RVT)** — specialized ViT backbone for fundus images
-- **Multi-Task Heads** — simultaneous classification, segmentation & detection
-- **Medical Language Model** — vision-language bridge for clinical report generation
-
-## 📁 Repository Structure
+## Actual Project Structure
 
 ```
 retina_gpt/
 │
-├── 📂 data/                        # Data layer
-│   ├── raw/                        # Raw fundus images (unprocessed)
-│   ├── processed/                  # Preprocessed & cached tensors
-│   └── datasets/                   # Dataset loader modules
-│       ├── __init__.py
-│       ├── fundus_dataset.py       # Base fundus dataset class
-│       ├── eyepacs_dataset.py      # EyePACS DR grading dataset
-│       └── drive_dataset.py        # DRIVE vessel segmentation dataset
+├── data/                          # Put your dataset here
+│   └── aptos/
+│       ├── train_images/          ← APTOS images go here
+│       └── train.csv              ← APTOS labels go here
 │
-├── 📂 models/                      # Model layer
-│   ├── __init__.py
-│   ├── backbone/                   # Vision encoder
-│   │   ├── __init__.py
-│   │   ├── retina_vit.py           # Retina Vision Transformer backbone
-│   │   └── patch_embed.py          # Custom fundus-aware patch embedding
-│   ├── heads/                      # Task-specific heads
-│   │   ├── __init__.py
-│   │   ├── quality_head.py         # Image quality assessment head
-│   │   ├── classification_head.py  # DR grading classification head
-│   │   ├── segmentation_head.py    # Vessel segmentation decoder head
-│   │   └── detection_head.py       # Lesion detection head
-│   └── language/                   # Vision-language bridge
-│       ├── __init__.py
-│       ├── report_generator.py     # Medical report generation model
-│       └── prompt_templates.py     # Clinical prompt engineering templates
+├── models/                        # AI models
+│   ├── foundation_model.py        ← Main model (DR+AMD+Glaucoma+Lesions)
+│   ├── backbone/
+│   │   └── retina_vit.py          ← Vision Transformer backbone
+│   ├── heads/
+│   │   └── classification_head.py ← Task heads
+│   ├── embedding/
+│   │   └── universal_embedding.py ← 1024-dim retina embedding
+│   ├── pretraining/
+│   │   └── retina_dino.py         ← Self-supervised pretraining
+│   ├── segmentation/
+│   │   └── retina_sam.py          ← Segment Anything for retina
+│   ├── vision_language/
+│   │   └── retina_clip.py         ← Vision-language alignment
+│   ├── temporal/
+│   │   └── retina_time.py         ← Longitudinal progression
+│   └── language/
+│       └── report_generator.py    ← Clinical report generation
 │
-├── 📂 training/                    # Training layer
-│   ├── __init__.py
-│   ├── trainer.py                  # Main trainer class with full loop
-│   ├── losses.py                   # Task-specific loss functions
-│   ├── metrics.py                  # Evaluation metrics (AUC, Dice, mAP)
-│   ├── schedulers.py               # LR schedulers & warmup strategies
-│   └── callbacks.py                # Training callbacks & checkpointing
+├── training/
+│   ├── trainer.py                 ← Training loop
+│   ├── dataset_manager.py         ← Loads APTOS/EyePACS/IDRiD
+│   ├── distributed.py             ← Multi-GPU support
+│   ├── experiment_tracker.py      ← W&B + TensorBoard
+│   └── model_registry.py          ← Checkpoint versioning
 │
-├── 📂 inference/                   # Inference layer
-│   ├── __init__.py
-│   ├── pipeline.py                 # End-to-end inference pipeline
-│   └── postprocessing.py           # Output postprocessing & formatting
+├── inference/
+│   └── pipeline.py                ← Main inference entry point
 │
-├── 📂 api/                         # REST API layer
-│   ├── __init__.py
-│   ├── main.py                     # FastAPI application entrypoint
-│   ├── routes.py                   # API route definitions
-│   ├── schemas.py                  # Pydantic request/response schemas
-│   └── middleware.py               # Auth, logging, rate limiting
+├── evaluation/
+│   ├── metrics.py                 ← AUC, Kappa, Dice, IoU
+│   └── clinical_eval.py           ← Clinical benchmark
 │
-├── 📂 configs/                     # Configuration layer
-│   ├── model_config.yaml           # Model architecture hyperparameters
-│   ├── training_config.yaml        # Training hyperparameters
-│   └── inference_config.yaml       # Inference settings
+├── interpretability/
+│   └── grad_cam.py                ← Grad-CAM + Attention maps
 │
-├── 📂 utils/                       # Utilities layer
-│   ├── __init__.py
-│   ├── preprocessing.py            # Retinal image preprocessing
-│   ├── augmentation.py             # Medical imaging augmentations
-│   ├── visualization.py            # Result visualization tools
-│   └── logging_utils.py            # Experiment logging (W&B, TensorBoard)
+├── retrieval/
+│   └── vector_search.py           ← FAISS similarity search
 │
-├── 📂 tests/                       # Test suite
-│   ├── test_preprocessing.py
-│   ├── test_models.py
-│   ├── test_pipeline.py
-│   └── test_api.py
+├── reporting/
+│   └── pdf_report.py              ← PDF report generator
 │
-├── 📂 scripts/                     # Utility scripts
-│   ├── train.py                    # Training entrypoint script
-│   ├── evaluate.py                 # Evaluation script
-│   └── export_model.py             # ONNX/TorchScript export
+├── data_engine/
+│   └── data_engine.py             ← Quality control + versioning
 │
-├── 📂 notebooks/                   # Research notebooks
-│   └── exploration.ipynb
+├── api/
+│   └── main.py                    ← FastAPI (10 endpoints)
+│
+├── scripts/
+│   ├── train.py                   ← START HERE to train
+│   ├── train_foundation.py        ← Full training orchestrator
+│   └── build_index.py             ← Build FAISS search index
+│
+├── configs/
+│   ├── model_config.yaml          ← Model settings
+│   └── training_config.yaml       ← Training settings (RTX 4050 ready)
+│
+├── utils/
+│   └── preprocessing.py           ← Image preprocessing
 │
 ├── requirements.txt
 ├── setup.py
 ├── Dockerfile
-└── README.md
+├── docker-compose.yml
+└── SETUP_AND_RUN.md               ← READ THIS FIRST
 ```
 
-## 🚀 Quick Start
+---
+
+## Quick Start
+
+**Read `SETUP_AND_RUN.md` — full step-by-step guide.**
 
 ```bash
-# Install
-pip install -e .
+# 1. Install
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
 
-# Train
-python scripts/train.py --config configs/training_config.yaml
+# 2. Put data at: data/aptos/train_images/ and data/aptos/train.csv
 
-# Inference
-python scripts/evaluate.py --checkpoint checkpoints/best_model.pth --image path/to/fundus.jpg
+# 3. Train
+python scripts/train.py --stage multitask --data_dir data/ --epochs 50
 
-# API Server
-uvicorn api.main:app --host 0.0.0.0 --port 8000
+# 4. Run API (Windows)
+set RETINA_CHECKPOINT=checkpoints/multitask/multitask_best.pt
+uvicorn api.main:app --port 8000
+
+# 5. Open: http://localhost:8000/docs
 ```
 
-## 🧪 Supported Tasks
+---
 
-| Task | Head | Metric |
-|------|------|--------|
-| Image Quality Assessment | QualityHead | Accuracy |
-| DR Classification (5-class) | ClassificationHead | AUC / Kappa |
-| Vessel Segmentation | SegmentationHead | Dice / IoU |
-| Lesion Detection | DetectionHead | mAP |
-| Clinical Report Generation | ReportGenerator | BLEU / CIDEr |
+## API Endpoints
 
-## 📄 License
-MIT License — For research use. Not for clinical deployment without validation.
+| Method | Endpoint | What it does |
+|--------|----------|-------------|
+| GET | /health | System status |
+| GET | /model/info | Model capabilities |
+| POST | /analyze | Full analysis + Grad-CAM |
+| POST | /analyze/batch | Multiple images |
+| POST | /explain | Grad-CAM only |
+| POST | /segment | Vessel + disc masks |
+| POST | /report/pdf | Download PDF |
+| POST | /search | Find similar cases |
+| GET | /search/stats | Index statistics |
+| POST | /progression | Patient history analysis |
+
+---
+
+## Hardware Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| GPU | RTX 3060 6GB | RTX 4050+ |
+| RAM | 16 GB | 32 GB |
+| Storage | 20 GB | 50 GB |
+| Python | 3.9+ | 3.11 |
+
+Config is pre-tuned for RTX 4050 6GB:
+- image_size = 224
+- batch_size = 16
+- grad_accum = 4 (effective batch = 64)
+- precision = fp16
