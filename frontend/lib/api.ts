@@ -10,7 +10,7 @@ import type {
 
 const api = axios.create({
   baseURL: "/api",
-  timeout: 120000,
+  timeout: 8000,
 });
 
 export const retinaApi = {

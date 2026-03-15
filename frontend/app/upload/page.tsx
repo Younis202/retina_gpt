@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { UploadDropzone } from "@/components/retina/UploadDropzone";
 import { useAnalysisStore } from "@/store";
 import retinaApi from "@/lib/api";
+import { generateDemoResult } from "@/lib/demo";
 import toast from "react-hot-toast";
 import {
   Zap,
@@ -78,19 +79,39 @@ export default function UploadPage() {
     };
 
     try {
-      const [result] = await Promise.all([
-        retinaApi.analyze(localFile, options),
-        runSteps(),
-      ]);
+      const stepsPromise = runSteps();
+      let apiResult = null;
+      let isDemo = false;
+
+      try {
+        apiResult = await retinaApi.analyze(localFile, options);
+      } catch {
+        isDemo = true;
+      }
+
+      await stepsPromise;
+
+      if (isDemo) {
+        apiResult = await generateDemoResult(localFile);
+        toast("Running in Demo Mode — backend not detected", {
+          icon: "🧪",
+          style: {
+            background: "#1e293b",
+            color: "#94a3b8",
+            border: "1px solid #334155",
+            fontSize: "13px",
+          },
+        });
+      }
+
       setProgress(100);
-      setResult(result);
-      toast.success("Analysis complete!");
+      setResult(apiResult!);
       setTimeout(() => router.push("/results"), 400);
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "response" in err
           ? (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-          : "Analysis failed. Make sure the backend is running.";
+          : "Something went wrong. Please try again.";
       toast.error(msg || "Analysis failed");
       setIsLoading(false);
       setIsAnalyzing(false);
