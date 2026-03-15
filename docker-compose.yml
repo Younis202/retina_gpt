@@ -17,17 +17,14 @@ version: "3.9"
 #   RETINA_CHECKPOINT=/path/to/checkpoint.pt \
 #   API_KEY=your-secret-key \
 #   docker-compose -f docker-compose.yml up -d
-#
-#   # Scale API horizontally
-#   docker-compose up --scale api=4
 # ============================================================
 
 services:
 
-  # ── Retina-GPT Inference API ────────────────────────────────
+  # ── Retina-GPT Inference API ───────────────────────────────
   api:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     image: retina-gpt:latest
     container_name: retina_gpt_api
@@ -37,28 +34,18 @@ services:
       - "8000:8000"
 
     environment:
-      # Model
       - RETINA_CHECKPOINT=${RETINA_CHECKPOINT:-}
       - API_KEY=${API_KEY:-}
-
-      # Runtime
       - PYTHONUNBUFFERED=1
       - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}
-
-      # Logging
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
 
     volumes:
-      # Mount checkpoints from host (avoids rebuilding image when model changes)
       - ${CHECKPOINT_DIR:-./checkpoints}:/app/checkpoints:ro
-      # Mount data directory (optional — for batch analysis)
-      - ${DATA_DIR:-./data}:/app/data:ro
-      # Reports output
+      - ${DATA_DIR:-./backend/data}:/app/data:ro
       - ${REPORTS_DIR:-./reports}:/app/reports:rw
-      # Logs
       - ./logs:/app/logs:rw
 
-    # GPU support (requires nvidia-docker2)
     deploy:
       resources:
         reservations:
@@ -81,7 +68,7 @@ services:
         --workers 2
         --log-level ${LOG_LEVEL:-info}
 
-  # ── Nginx Reverse Proxy ────────────────────────────────────
+  # ── Nginx Reverse Proxy ─────────────────────────────────────
   nginx:
     image: nginx:alpine
     container_name: retina_gpt_nginx
@@ -99,9 +86,9 @@ services:
       - ./logs/nginx:/var/log/nginx:rw
 
     profiles:
-      - production    # Only start with: docker-compose --profile production up
+      - production
 
-  # ── Redis (async job queue for batch processing) ───────────
+  # ── Redis ───────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: retina_gpt_redis
@@ -116,9 +103,8 @@ services:
     command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
 
     profiles:
-      - async    # Only start with: docker-compose --profile async up
+      - async
 
-# ── Volumes ─────────────────────────────────────────────────
 volumes:
   redis_data:
     driver: local
