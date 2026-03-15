@@ -321,8 +321,7 @@ async def analyze(
     )
     # Save to database (Data Flywheel)
     try:
-        patient_id_val = patient_info.get("id", "Unknown") if patient_info else (image_id or "Unknown")
-        save_case(result.to_api_dict(), patient_id=patient_id_val, image_name=file.filename or "")
+        save_case(result.to_api_dict(), patient_id=iid, image_name=file.filename or "")
     except Exception as e:
         logger.warning(f"[API] Could not save case to DB: {e}")
 

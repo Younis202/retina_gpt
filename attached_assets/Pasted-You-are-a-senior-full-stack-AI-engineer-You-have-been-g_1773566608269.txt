@@ -1,0 +1,231 @@
+You are a senior full-stack AI engineer.
+
+You have been given a complete system for an AI ophthalmology platform **RetinaGPT**.
+already implemented in Python using FastAPI and contains a full AI pipeline for retinal image analysis.
+
+build the **entire production-grade frontend platform** using **Next.js**.
+
+You are free to make the best architectural decisions as an expert engineer.
+take a deeep deeep deeep dive in the structure and build the best possible UI platform for it.
+
+---
+
+PROJECT CONTEXT
+
+RetinaGPT is an AI clinical system that analyzes retinal fundus images and detects eye diseases such as diabetic retinopathy.
+
+The backend already provides:
+
+AI capabilities:
+
+* Retina foundation model
+* Multi-task disease classification
+* Segmentation
+* Grad-CAM explainability
+* Similar case retrieval (vector search)
+* Clinical PDF reports
+* Image quality assessment
+
+:
+
+* FastAPI
+* SQLite cases database
+* FAISS vector search
+* AI inference pipeline
+
+check all the technologies and endpoints:
+
+Each analysis automatically saves a case in the database.
+
+---
+
+Design a **complete clinical AI platform frontend** for doctors.
+
+Use the following stack:
+
+Next.js, TypeScript, TailwindCSS, Shadcn UI, React Query, Zustand, Framer Motion, Chart.js or Recharts
+or what you see is better you're free to do what you want I want the best
+
+Create a clean and modern medical-grade interface similar to high-end SaaS dashboards.
+
+---
+
+APPLICATION PAGES
+
+1. Landing Page
+   A professional AI healthcare landing page.
+
+Sections:
+
+* Hero section introducing RetinaGPT
+* AI capabilities
+* Clinical benefits
+* Example retina analysis
+* Call-to-action for doctors
+
+---
+
+2. Doctor Dashboard
+
+Display real-time statistics using data from `/cases/stats`.
+
+Include:
+
+* Total analyzed cases
+* Cases this week
+* Disease severity distribution
+* Activity charts
+* Recent cases list
+
+---
+
+3. Upload Retina Scan Page
+
+Allow doctors to upload retinal fundus images.
+
+Features:
+
+* Drag-and-drop image uploader
+* Image preview
+* Upload progress
+* "Analyze" button
+
+When clicked:
+
+Send image to:
+
+POST /analyze
+
+Then redirect to results page.
+
+---
+
+4. AI Analysis Results Page
+
+Display the AI diagnosis.
+
+Show:
+
+* Predicted disease
+* Severity grade
+* Confidence score
+* Image quality score
+* Grad-CAM heatmap overlay
+* Segmentation masks
+
+Also call:
+
+POST /search
+
+to display **similar retinal cases**.
+
+Show them as cards with similarity score.
+
+---
+
+5. Case Database Page
+
+Use endpoint:
+
+GET /cases
+
+Display a table containing:
+
+* Case ID
+* Upload date
+* Diagnosis
+* Severity
+* Confidence
+
+Each row links to case detail page.
+
+---
+
+6. Case Detail Page
+
+Use endpoint:
+
+GET /cases/{id}
+
+Display:
+
+* Original retina image
+* AI heatmap
+* Segmentation overlay
+* Diagnosis
+* Clinical explanation
+* Download PDF report button
+
+---
+
+7. Analytics Page
+
+Display charts for:
+
+* Disease distribution
+* Cases per day
+* AI usage statistics
+
+Use Chart.js or Recharts.
+
+---
+
+8. Settings Page
+
+Doctor profile
+API configuration
+System status from `/health`
+
+---
+
+UI COMPONENTS TO BUILD
+
+RetinaImageViewer
+HeatmapOverlay
+SegmentationLayer
+DiagnosisBadge
+ConfidenceMeter
+SimilarCaseCard
+UploadDropzone
+
+---
+
+DESIGN REQUIREMENTS
+
+Make the UI look like a premium AI medical product.
+
+Style inspiration:
+
+* Vercel dashboard
+* Stripe dashboard
+* Apple Health UI
+
+Requirements:
+
+* Light and dark mode
+* Smooth animations with Framer Motion
+* Responsive layout
+* Clean typography
+* Professional medical design
+
+---
+
+FOLDER STRUCTURE
+
+/app
+/components
+/lib
+/hooks
+/store
+/types
+/services
+
+---
+
+GOAL
+
+Create a scalable production-ready platform that feels like a real AI medical startup product.
+
+Assume the backend is already running locally at:
+
+http://localhost:8000

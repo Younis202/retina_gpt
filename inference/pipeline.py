@@ -14,7 +14,7 @@ from __future__ import annotations
 import base64, io, logging, os, time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import cv2, numpy as np, torch
 from PIL import Image
